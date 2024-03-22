@@ -5,14 +5,17 @@ import java.util.Random;
 
 public class Bubblesort{
     public static void main(String[] args) throws InterruptedException {
-        int dlugosc=1000000;
+        int dlugosc=100000;
+        int ilosc_watkow=16;
         Random losuj=new Random();
         int[] tablica=new int[dlugosc];
         for(int i=0;i<dlugosc;i++){
             tablica[i]= losuj.nextInt(100)+1;
         }
-        //System.out.println(Arrays.toString(tablica));
-        int ilosc_watkow=4;
+        System.out.println(Bubblesort.test_multithread(tablica,ilosc_watkow));
+    }
+    public static long test_multithread(int[] tablica,int ilosc_watkow) throws InterruptedException {
+        long startTime = System.currentTimeMillis();
         int[][] tablicatablic = podziel_tablice(tablica, ilosc_watkow,tablica.length/ilosc_watkow);
         Thread[] tablica_watkow=new Thread[ilosc_watkow];
         for (int i=0;i<ilosc_watkow;i++) {
@@ -23,21 +26,30 @@ public class Bubblesort{
         for(Thread watek:tablica_watkow){
             watek.join();
         }
-        //System.out.println(Arrays.deepToString(tablicatablic));
-        //int ilosc_powtorzen=(int)(Math.log(ilosc_watkow) / Math.log(2));
-        final int[][] wyniki= new int[ilosc_watkow/2][];
+        int[] wynikowa_tablica = merging(tablicatablic);
 
-        for (int i=0;i<ilosc_watkow/2;i++){
-            final int finali=i;
-            tablica_watkow[finali]=new Thread(()->wyniki[finali]=Bubblesort.polacz_tablice(tablicatablic[finali*2],tablicatablic[finali*2+1]));
-            tablica_watkow[finali].start();
-        }
-        for(int i=0;i<ilosc_watkow/2;i++){
-            tablica_watkow[i].join();
-        }
 
-        int [] wynikowa_tablica=polacz_tablice(wyniki[0],wyniki[1]);
-        System.out.println(Arrays.toString(wynikowa_tablica));
+       //System.out.println(Arrays.toString(wynikowa_tablica));
+        return System.currentTimeMillis() - startTime;
+    }
+    public static int[] merging(int[][] tab) throws InterruptedException {
+        if(tab.length!=2) {
+            final int[][] wyniki = new int[tab.length/2][];
+            Thread[] tablica_watkow = new Thread[tab.length/2];
+            for (int i = 0; i < tab.length/2; i++) {
+                final int finali = i;
+                tablica_watkow[i] = new Thread(() -> wyniki[finali] = merge_tables(tab[finali * 2], tab[finali * 2 + 1]));
+                tablica_watkow[i].start();
+            }
+            for (Thread watek : tablica_watkow) {
+                watek.join();
+            }
+            return merging(wyniki);
+        }
+        else{
+
+            return merge_tables(tab[0],tab[1]);
+        }
     }
     public static void sort(int[] tablica){
         for(int i=0;i<tablica.length-1;i++){
@@ -54,38 +66,39 @@ public class Bubblesort{
         tab[j]=temp;
     }
     public static int[][] podziel_tablice(int[] tablica, int ilosctablic,int dlugosc_tablic) {
-        int[][] tablicatablic = new int[ilosctablic][];
+        int[][] arrayOfArrays = new int[ilosctablic][];
         for (int i = 0; i < ilosctablic; i++) {
-            tablicatablic[i] = new int[dlugosc_tablic];
-            System.arraycopy(tablica, i*dlugosc_tablic, tablicatablic[i], 0, dlugosc_tablic);
+            arrayOfArrays[i] = new int[dlugosc_tablic];
+            System.arraycopy(tablica, i*dlugosc_tablic, arrayOfArrays[i], 0, dlugosc_tablic);
         }
-        return tablicatablic;
+
+        return arrayOfArrays;
     }
-    public static int[] polacz_tablice(int[] tab1,int[] tab2){
-        int dlugosc_nowej=tab1.length+tab2.length;
-        int indeks_drugiej=0;
+    public static int[] merge_tables(int[] tablica1,int[] tablica2){
+        int dlugosc_nowej_tabeli=tablica1.length+tablica2.length;
+        int[] nowa_tablica=new int[dlugosc_nowej_tabeli];
         int indeks_pierwszej=0;
-        int[] polaczona_tablica=new int[dlugosc_nowej];
-        for(int i=0;i<dlugosc_nowej;i++){
-            if(indeks_pierwszej==tab1.length){
-                polaczona_tablica[i]=tab2[indeks_drugiej];
+        int indeks_drugiej=0;
+        for(int i=0;i<nowa_tablica.length;i++){
+            if(indeks_pierwszej==tablica1.length){
+                nowa_tablica[i]=tablica2[indeks_drugiej];
                 indeks_drugiej++;
             }
-            else if (indeks_drugiej==tab2.length) {
-                polaczona_tablica[i]=tab1[indeks_pierwszej];
+            else if (indeks_drugiej==tablica2.length) {
+                nowa_tablica[i]=tablica1[indeks_pierwszej];
                 indeks_pierwszej++;
             }
             else {
-                if (tab2[indeks_drugiej] > tab1[indeks_pierwszej]) {
-                    polaczona_tablica[i] = tab1[indeks_pierwszej];
-                    indeks_pierwszej++;
-                }
-                else {
-                    polaczona_tablica[i] = tab2[indeks_drugiej];
+                if (tablica1[indeks_pierwszej] > tablica2[indeks_drugiej]) {
+                    nowa_tablica[i] = tablica2[indeks_drugiej];
                     indeks_drugiej++;
+                } else {
+                    nowa_tablica[i] = tablica1[indeks_pierwszej];
+                    indeks_pierwszej++;
                 }
             }
         }
-        return polaczona_tablica;
+
+        return nowa_tablica;
     }
 }
