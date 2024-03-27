@@ -9,7 +9,7 @@ import javax.swing.*;
 public class MultiThreadProgressBar extends JFrame {
     private static JProgressBar[] progressBars;
     private JButton startButton;
-    private int numThreads = 4;
+    private int numThreads = 16;
 
     public MultiThreadProgressBar() {
         setTitle("Multi-Thread Progress Bar");
@@ -40,8 +40,20 @@ public class MultiThreadProgressBar extends JFrame {
     }
 
     private void startThreads() {
-        int[] tablica=stworz_tablice(10000);
-        test_multithread(tablica,numThreads);
+        int[] tablica=stworz_tablice(200000);
+        long[] tablica_czasow=new long[10];
+        tablica_czasow[0]=test_multithread(tablica,1);
+        tablica_czasow[1]=test_multithread(tablica,2);
+        tablica_czasow[2]=test_multithread(tablica,4);
+        tablica_czasow[3]=test_multithread(tablica,8);
+        tablica_czasow[4]=test_multithread(tablica,16);
+        tablica_czasow[5]=test_multithread(tablica,32);
+        tablica_czasow[6]=test_multithread(tablica,64);
+        tablica_czasow[7]=test_multithread(tablica,128);
+        tablica_czasow[8]=test_multithread(tablica,256);
+        tablica_czasow[9]=test_multithread(tablica,512);
+
+        System.out.println(Arrays.toString(tablica_czasow));
     }
     public static int[] stworz_tablice(int dlugosc){
         Random losuj=new Random();
@@ -51,7 +63,8 @@ public class MultiThreadProgressBar extends JFrame {
         }
         return tablica;
     }
-    public static void test_multithread(int[] tablica, int ilosc_watkow){
+    public static long test_multithread(int[] tablica, int ilosc_watkow){
+        long startTime = System.currentTimeMillis();
         int[][] tablicatablic = podziel_tablice(tablica, ilosc_watkow,tablica.length/ilosc_watkow);
         Thread[] tablica_watkow=new Thread[ilosc_watkow];
         for (int i=0;i<ilosc_watkow;i++) {
@@ -66,11 +79,15 @@ public class MultiThreadProgressBar extends JFrame {
                 throw new RuntimeException(e);
             }
         }
-        System.out.println(Arrays.deepToString(tablicatablic));
-        //int[] wynikowa_tablica = merging(tablicatablic);
+        //System.out.println(Arrays.deepToString(tablicatablic));
+        int[] wynikowa_tablica = merging(tablicatablic);
         //System.out.println(Arrays.toString(wynikowa_tablica));
+        return System.currentTimeMillis() - startTime;
     }
     public static int[] merging(int[][] tab){
+        if(tab.length==1){
+            return tab[0];
+        }
         if(tab.length!=2) {
             final int[][] wyniki = new int[tab.length/2][];
             Thread[] tablica_watkow = new Thread[tab.length/2];
@@ -93,20 +110,23 @@ public class MultiThreadProgressBar extends JFrame {
             return merge_tables(tab[0],tab[1]);
         }
     }
-    public static void sort(int[] tablica,int nr_watku){
-        for(int i=0;i<tablica.length-1;i++){
-            for(int j=0;j<tablica.length-i-1;j++){
-                if(tablica[j]>tablica[j+1]){
-                    swap(j,j+1,tablica);
+    public static void sort(int[] tablica,int nr_watku) {
+        for (int i = 0; i < tablica.length - 1; i++) {
+            for (int j = 0; j < tablica.length - i - 1; j++) {
+                if (tablica[j] > tablica[j + 1]) {
+                    swap(j, j + 1, tablica);
                 }
             }
-            int finalI = i;
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    progressBars[nr_watku].setValue((int) Math.ceil(((double) (finalI + 2)/(double) tablica.length) *100));
-                    System.out.println((int) Math.ceil(((double) (finalI + 2)/(double) tablica.length) *100));
+            int procent=(int) Math.ceil(((double) (i + 2) / (double) tablica.length) * 100);
+
+
+            //System.out.println(progressBars[nr_watku].getValue());
+            if(procent%10==0) {
+                if(procent!=progressBars[nr_watku].getValue()) {
+                    progressBars[nr_watku].setValue(procent);
+                    progressBars[nr_watku].update(progressBars[nr_watku].getGraphics());
                 }
-            });
+            }
         }
     }
     public static void swap(int i,int j,int[] tab)  {

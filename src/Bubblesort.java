@@ -33,7 +33,10 @@ public class Bubblesort{
         return System.currentTimeMillis() - startTime;
     }
     public static int[] merging(int[][] tab) throws InterruptedException {
-        if(tab.length!=2) {
+        if(tab.length==1){
+            return tab[0];
+        }
+        else if(tab.length!=2) {
             final int[][] wyniki = new int[tab.length/2][];
             Thread[] tablica_watkow = new Thread[tab.length/2];
             for (int i = 0; i < tab.length/2; i++) {
