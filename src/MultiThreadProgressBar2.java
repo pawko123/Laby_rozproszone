@@ -7,11 +7,12 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.Arrays;
 import java.util.Random;
+import java.util.concurrent.Semaphore;
 
 public class MultiThreadProgressBar2 extends JFrame {
     private static JProgressBar[] progressBars;
     private JButton startButton;
-    private int numThreads = 8;
+    private int numThreads = 4;
 
     public MultiThreadProgressBar2() {
         setTitle("Multi-Thread Progress Bar");
@@ -44,14 +45,24 @@ public class MultiThreadProgressBar2 extends JFrame {
     private void startThreads() {
         start(numThreads);
     }
-        public static void start(int watki){
-            String sciezka_do_folderu="C:\\Users\\games\\OneDrive\\Pulpit\\Studia\\rozproszone\\Laby_rozproszone\\pliki";
+        public static void start(int iloscwatkow){
+            Semaphore semaphore = new Semaphore(iloscwatkow);
+            String sciezka_do_folderu="C:\\Users\\Paweł\\IdeaProjects\\Laby_rozproszone\\pliki";
             File folder=new File(sciezka_do_folderu);
             File[] tablicaplikow=folder.listFiles();
             Thread[] watki=new Thread[tablicaplikow.length];
             for(int i=0;i< tablicaplikow.length;i++) {
                 final int finali=i;
-                watki[i]=new Thread(()->szyfruj(tablicaplikow[finali], finali%4));
+                watki[i]=new Thread(()->{
+                    try {
+                        semaphore.acquire();
+                        szyfruj(tablicaplikow[finali], finali % 4);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    } finally {
+                        semaphore.release();
+                    }
+                });
                 watki[i].start();
             }
             try {
@@ -69,7 +80,6 @@ public class MultiThreadProgressBar2 extends JFrame {
                 StringBuilder zaszyfrowanytekst = new StringBuilder();
                 int znakint;
                 int iloscznakow=0;
-                int progres=0;
                 while((znakint=odczyt.read())!=-1){
                     char znak=(char)znakint;
                     char zaszyfrowanyznak=szyfrowaniecezara(znak);
@@ -77,12 +87,13 @@ public class MultiThreadProgressBar2 extends JFrame {
                     iloscznakow++;
                     int procent=(int) Math.round(((double) (iloscznakow) / (double) plik.length()) * 100);
                     if (procent%10==0) {
-                        if(procent!=progres) {
-                            progres=procent;
-                            System.out.println("Postęp dla watku nr" + nr_watku + ": " + progres + "%");
+                        if(procent!=progressBars[nr_watku].getValue()) {
+                            progressBars[nr_watku].setValue(procent);
+                            progressBars[nr_watku].update(progressBars[nr_watku].getGraphics());
+                            System.out.println("Postęp dla watku nr" + nr_watku + ": " + progressBars[nr_watku].getValue() + "%");
                         }
                     }
-                    Thread.sleep(1);
+                    //Thread.sleep(1);
                 }
                 odczyt.close();
                 BufferedWriter zapis=new BufferedWriter(new FileWriter(plik));
@@ -95,9 +106,9 @@ public class MultiThreadProgressBar2 extends JFrame {
                 System.out.println("Plik nie znaleziony");
             } catch (IOException e) {
                 throw new RuntimeException(e);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            } //catch (InterruptedException e) {
+                //throw new RuntimeException(e);
+            //}
         }
         public static char szyfrowaniecezara(char znak){
             if (!Character.isAlphabetic(znak)) {
