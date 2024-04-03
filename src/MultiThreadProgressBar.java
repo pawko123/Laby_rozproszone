@@ -9,7 +9,7 @@ import javax.swing.*;
 public class MultiThreadProgressBar extends JFrame {
     private static JProgressBar[] progressBars;
     private JButton startButton;
-    private int numThreads = 16;
+    private int numThreads = 8;
 
     public MultiThreadProgressBar() {
         setTitle("Multi-Thread Progress Bar");
@@ -46,13 +46,6 @@ public class MultiThreadProgressBar extends JFrame {
         tablica_czasow[1]=test_multithread(tablica,2);
         tablica_czasow[2]=test_multithread(tablica,4);
         tablica_czasow[3]=test_multithread(tablica,8);
-        tablica_czasow[4]=test_multithread(tablica,16);
-        tablica_czasow[5]=test_multithread(tablica,32);
-        tablica_czasow[6]=test_multithread(tablica,64);
-        tablica_czasow[7]=test_multithread(tablica,128);
-        tablica_czasow[8]=test_multithread(tablica,256);
-        tablica_czasow[9]=test_multithread(tablica,512);
-
         System.out.println(Arrays.toString(tablica_czasow));
     }
     public static int[] stworz_tablice(int dlugosc){
