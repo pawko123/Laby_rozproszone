@@ -5,9 +5,11 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class Szyfrowanie extends JFrame {
     private static JProgressBar[] progressBars;
@@ -36,14 +38,10 @@ public class Szyfrowanie extends JFrame {
         startButton = new JButton("Start");
         startButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                startThreads();
+                start(numThreads);
             }
         });
         add(startButton, BorderLayout.SOUTH);
-    }
-
-    private void startThreads() {
-        start(numThreads);
     }
         public static void start(int iloscwatkow){
         //laptop - C:\Users\games\OneDrive\Pulpit\Studia\rozproszone\Laby_rozproszone\pliki
@@ -67,6 +65,7 @@ public class Szyfrowanie extends JFrame {
                 });
                 watki[i].start();
             }
+            System.gc();
         }
         public static void szyfruj(File plik,int nr_watku){
             try {
