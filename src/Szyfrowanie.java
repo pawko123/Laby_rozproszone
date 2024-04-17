@@ -5,11 +5,9 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class Szyfrowanie extends JFrame {
     private static JProgressBar[] progressBars;
@@ -44,28 +42,30 @@ public class Szyfrowanie extends JFrame {
         add(startButton, BorderLayout.SOUTH);
     }
         public static void start(int iloscwatkow){
-        //laptop - C:\Users\games\OneDrive\Pulpit\Studia\rozproszone\Laby_rozproszone\pliki
-        //komputer - C:\Users\Paweł\IdeaProjects\Laby_rozproszone\pliki
-            String sciezka_do_folderu="C:\\Users\\Paweł\\IdeaProjects\\Laby_rozproszone\\pliki";
-            File folder=new File(sciezka_do_folderu);
-            File[] tablicaplikow=folder.listFiles();
-            Thread[] watki=new Thread[iloscwatkow];
-            BlockingQueue<File> kolejka = new ArrayBlockingQueue<>(tablicaplikow.length);
-            kolejka.addAll(Arrays.asList(tablicaplikow));
-            for(int i=0;i< iloscwatkow;i++) {
-                int finalI = i;
-                watki[i]=new Thread(()-> {
-                    while(!kolejka.isEmpty()) {
-                        try {
-                            szyfruj(kolejka.take(), finalI);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
+            String sciezka_do_folderu=".\\pliki";
+            try {
+                File folder = new File(sciezka_do_folderu);
+                File[] tablicaplikow = folder.listFiles();
+                Thread[] watki = new Thread[iloscwatkow];
+                BlockingQueue<File> kolejka = new ArrayBlockingQueue<>(tablicaplikow.length);
+                kolejka.addAll(Arrays.asList(tablicaplikow));
+                for (int i = 0; i < iloscwatkow; i++) {
+                    final int finalI = i;
+                    watki[i] = new Thread(() -> {
+                        while (!kolejka.isEmpty()) {
+                            try {
+                                szyfruj(kolejka.take(), finalI);
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
                         }
-                    }
-                });
-                watki[i].start();
+                    });
+                    watki[i].start();
+                }
+                System.gc();
+            }catch (NullPointerException e){
+                System.out.println("Folder jest pusty lub nie istnieje");
             }
-            System.gc();
         }
         public static void szyfruj(File plik,int nr_watku){
             try {
