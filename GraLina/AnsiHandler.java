@@ -1,5 +1,8 @@
 package GraLina;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class AnsiHandler {
     public static String addcolor(String text, String color) {
         return switch (color) {

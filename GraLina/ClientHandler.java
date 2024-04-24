@@ -19,8 +19,10 @@ public class ClientHandler implements Runnable{
     PrintWriter out;
     Team userteam;
     String username;
-    public ClientHandler(Socket client){
+    Server server;
+    public ClientHandler(Socket client,Server server){
         this.client=client;
+        this.server=server;
         try {
             this.in=new BufferedReader(new InputStreamReader(client.getInputStream()));
             this.out=new PrintWriter(client.getOutputStream(),true);
@@ -50,17 +52,17 @@ public class ClientHandler implements Runnable{
                 else{
                     out.println("Podano nieprawidlowa wartosc");
                 }
-                Server.broadcast("Uzytkownik o nazwie "+AnsiHandler.addcolor(username,"yellow")+" dolaczyl do zespolu "+
+                server.broadcast("Uzytkownik o nazwie "+AnsiHandler.addcolor(username,"yellow")+" dolaczyl do zespolu "+
                         AnsiHandler.addcolor(userteam.toString(),userteam.toString().toLowerCase()));
                 String message;
                 while((message = in.readLine())!=null){
                     if(message.startsWith("/wyjdz")){
-                        Server.broadcast("Uzytkownik "+AnsiHandler.addcolor(username,"yellow")+" druzyny "+
+                        server.broadcast("Uzytkownik "+AnsiHandler.addcolor(username,"yellow")+" druzyny "+
                                 AnsiHandler.addcolor(userteam.toString(),userteam.toString().toLowerCase())+" wyszedl z gry.");
                         shutdown();
                     }
                     else{
-                        Server.zmienstatusliny(this);
+                        server.zmienstatusliny(this);
                     }
                 }
             }
