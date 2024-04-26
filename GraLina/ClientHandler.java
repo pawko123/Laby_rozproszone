@@ -8,16 +8,12 @@ import java.net.Socket;
 import java.util.Objects;
 import java.util.Random;
 
-enum Team{
-    BLUE,
-    RED
-}
 
 public class ClientHandler implements Runnable{
     Socket client;
     BufferedReader in;
     PrintWriter out;
-    Team userteam;
+    String userteam;
     String username;
     Server server;
     public ClientHandler(Socket client,Server server){
@@ -34,39 +30,35 @@ public class ClientHandler implements Runnable{
     @Override
     public void run() {
         try {
-            boolean enteredvalid = false;
-            while (!enteredvalid) {
-                out.println("Podaj nazwe uzytkownika:");
-                username=in.readLine();
-                out.println("Wybierz swoj zespol:");
-                out.println("1.Red");
-                out.println("2.Blue");
-                String enteredvalue = in.readLine();
-                if (Objects.equals(enteredvalue, "1")) {
-                    enteredvalid = true; 
-                    userteam=Team.RED;
-                }
-                else if (Objects.equals(enteredvalue, "2")) {
-                    userteam=Team.BLUE;
-                }
-                else{
-                    out.println("Podano nieprawidlowa wartosc");
-                }
+            String line1 = in.readLine();
+            String line2 = in.readLine();
+            String[] parts1 = line1.split(":");
+            String[] parts2 = line2.split(":");
+            if(Objects.equals(parts1[0], "Username")){
+                username = parts1[1];
+            }else if(Objects.equals(parts1[0], "UserTeam")){
+                userteam = parts1[1];
+            }
+            if(Objects.equals(parts2[0], "Username")){
+                username = parts2[1];
+            }else if(Objects.equals(parts2[0], "UserTeam")){
+                userteam = parts2[1];
+            }
                 server.broadcast("Uzytkownik o nazwie "+AnsiHandler.addcolor(username,"yellow")+" dolaczyl do zespolu "+
-                        AnsiHandler.addcolor(userteam.toString(),userteam.toString().toLowerCase()));
+                        AnsiHandler.addcolor(userteam,userteam.toLowerCase()));
                 String message;
                 while((message = in.readLine())!=null){
                     if(message.startsWith("/wyjdz")){
                         server.broadcast("Uzytkownik "+AnsiHandler.addcolor(username,"yellow")+" druzyny "+
-                                AnsiHandler.addcolor(userteam.toString(),userteam.toString().toLowerCase())+" wyszedl z gry.");
+                                AnsiHandler.addcolor(userteam,userteam.toLowerCase())+" wyszedl z gry.");
                         shutdown();
                     }
-                    else{
+                    if(message.startsWith("/ciagnijline")){
                         server.zmienstatusliny(this);
                     }
                 }
             }
-        }
+
         catch (IOException e){
             shutdown();
         }

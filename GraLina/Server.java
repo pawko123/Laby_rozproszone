@@ -6,6 +6,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -47,7 +48,10 @@ public class Server implements Runnable{
                 c.sendMessage(message);
             }
         }
-        terminalout.println("["+new Date()+"] "+message);
+        String[] parts=message.split(":");
+        if(!parts[0].equals("statusliny")) {
+            terminalout.println("[" + new Date() + "] " + message);
+        }
     }
     public void shutdown(){
         running=false;
@@ -69,21 +73,22 @@ public class Server implements Runnable{
     public synchronized void zmienstatusliny(ClientHandler c){
         Random random = new Random();
         int wartosc_przesuniecia=random.nextInt(5) + 1;
-        if(c.userteam==Team.RED){
+        if(Objects.equals(c.userteam, "RED")){
             this.statusliny-=wartosc_przesuniecia;
-        } else if (c.userteam==Team.BLUE) {
+        } else if (Objects.equals(c.userteam, "BLUE")) {
             this.statusliny+=wartosc_przesuniecia;
         }
-        broadcast("Uzytkownik "+AnsiHandler.addcolor(c.username,"yellow")+" druzyny "+AnsiHandler.addcolor(c.userteam.toString(),c.userteam.toString().toLowerCase())
+        broadcast("statusliny:"+this.statusliny);
+        broadcast("Uzytkownik "+AnsiHandler.addcolor(c.username,"yellow")+" druzyny "+AnsiHandler.addcolor(c.userteam,c.userteam.toLowerCase())
                 +" przesunal line o "+wartosc_przesuniecia+". Nowa wartosc liny to "+AnsiHandler.addcolor(String.valueOf(this.statusliny),"green"));
         if(statusliny<=-50){
-            broadcast(AnsiHandler.addcolor("Dryzyna RED wygrala przeciaganie liny","red"));
-            broadcast("Rozpoczynanie nowej rozgrywki");
+            broadcast("statusliny:"+this.statusliny);
+            broadcast(AnsiHandler.addcolor("Dryzyna RED wygrala przeciaganie liny","red")+". Rozpoczynanie nowej rozgrywki");
             statusliny=0;
         }
         else if(statusliny>=50){
-            broadcast(AnsiHandler.addcolor("Dryzyna BLUE wygrala przeciaganie liny","blue"));
-            broadcast("Rozpoczynanie nowej rozgrywki");
+            broadcast("statusliny:"+this.statusliny);
+            broadcast(AnsiHandler.addcolor("Dryzyna BLUE wygrala przeciaganie liny","blue")+". Rozpoczynanie nowej rozgrywki");
             statusliny=0;
         }
     }

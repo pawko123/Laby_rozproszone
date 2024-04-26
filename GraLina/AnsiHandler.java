@@ -13,4 +13,14 @@ public class AnsiHandler {
             default -> text;
         };
     }
+    public static String removecolor(String text) {
+        String ansiEscapePattern = "\033\\[[;\\d]*m";
+
+        // Compile the regular expression pattern
+        Pattern pattern = Pattern.compile(ansiEscapePattern);
+
+        // Use Matcher to find and replace ANSI escape codes
+        Matcher matcher = pattern.matcher(text);
+        return matcher.replaceAll("");
+    }
 }
